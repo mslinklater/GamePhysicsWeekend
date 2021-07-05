@@ -1,0 +1,4 @@
+C:\Users\Martin Linklater\Code\VulkanRenderer\x64\Debug\GamePhysicsWeekend.exe
+C:\Users\Martin Linklater\Code\VulkanRenderer\x64\Debug\GamePhysicsWeekend.pdb
+C:\Users\Martin Linklater\Code\GamePhysicsWeekend\x64\Debug\GamePhysicsWeekend.exe
+C:\Users\Martin Linklater\Code\GamePhysicsWeekend\x64\Debug\GamePhysicsWeekend.pdb
