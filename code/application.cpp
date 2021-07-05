@@ -31,8 +31,10 @@ static unsigned __int64 gStartTicks;
 GetTimeSeconds
 ====================================
 */
-int GetTimeMicroseconds() {
-	if ( false == gIsInitialized ) {
+int GetTimeMicroseconds() 
+{
+	if ( false == gIsInitialized ) 
+	{
 		gIsInitialized = true;
 
 		// Get the high frequency counter's resolution
@@ -66,7 +68,9 @@ Application
 Application::Initialize
 ====================================================
 */
-void Application::Initialize() {
+void Application::Initialize() 
+{
+	// setup the pre-defined shapes
 	FillDiamond();
 
 	InitializeGLFW();
@@ -76,10 +80,11 @@ void Application::Initialize() {
 	m_scene->Initialize();
 	m_scene->Reset();
 
-	m_models.reserve( m_scene->m_bodies.size() );
-	for ( int i = 0; i < m_scene->m_bodies.size(); i++ ) {
+	m_models.reserve( m_scene->mBodies.size() );
+	for ( int i = 0; i < m_scene->mBodies.size(); i++ ) 
+	{
 		Model * model = new Model();
-		model->BuildFromShape( m_scene->m_bodies[ i ].m_shape );
+		model->BuildFromShape( m_scene->mBodies[ i ].m_shape );
 		model->MakeVBO( &m_deviceContext );
 
 		m_models.push_back( model );
@@ -91,8 +96,9 @@ void Application::Initialize() {
 	m_cameraRadius = 15.0f;
 	m_cameraFocusPoint = Vec3( 0, 0, 3 );
 
-	m_isPaused = true;
-	m_stepFrame = false;
+	bIsPaused = true;
+	bStepFrame = false;
+	bQuitRequested = false;
 }
 
 /*
@@ -109,8 +115,12 @@ Application::~Application() {
 Application::InitializeGLFW
 ====================================================
 */
-void Application::InitializeGLFW() {
-	glfwInit();
+bool Application::InitializeGLFW() 
+{
+	if (!glfwInit())
+	{
+		return false;
+	}
 
 	glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
 
@@ -124,6 +134,8 @@ void Application::InitializeGLFW() {
 	glfwSetCursorPosCallback( m_glfwWindow, Application::OnMouseMoved );
 	glfwSetScrollCallback( m_glfwWindow, Application::OnMouseWheelScrolled );
 	glfwSetKeyCallback( m_glfwWindow, Application::OnKeyboard );
+
+	return true;
 }
 
 /*
@@ -432,10 +444,13 @@ void Application::Keyboard( int key, int scancode, int action, int modifiers ) {
 		m_scene->Reset();
 	}
 	if ( GLFW_KEY_T == key && GLFW_RELEASE == action ) {
-		m_isPaused = !m_isPaused;
+		bIsPaused = !bIsPaused;
 	}
 	if ( GLFW_KEY_Y == key && ( GLFW_PRESS == action || GLFW_REPEAT == action ) ) {
-		m_stepFrame = m_isPaused && !m_stepFrame;
+		bStepFrame = bIsPaused && !bStepFrame;
+	}
+	if (GLFW_KEY_Q == key && GLFW_RELEASE == action) {
+		bQuitRequested = true;
 	}
 }
 
@@ -444,23 +459,26 @@ void Application::Keyboard( int key, int scancode, int action, int modifiers ) {
 Application::MainLoop
 ====================================================
 */
-void Application::MainLoop() {
+void Application::MainLoop() 
+{
 	static int timeLastFrame = 0;
 	static int numSamples = 0;
 	static float avgTime = 0.0f;
 	static float maxTime = 0.0f;
 
-	while ( !glfwWindowShouldClose( m_glfwWindow ) ) {
+	while ( !glfwWindowShouldClose( m_glfwWindow ) && !bQuitRequested) 
+	{
 		int time					= GetTimeMicroseconds();
 		float dt_us					= (float)time - (float)timeLastFrame;
-		if ( dt_us < 16000.0f ) {
+		if ( dt_us < 16000.0f ) 
+		{
 			int x = 16000 - (int)dt_us;
 			std::this_thread::sleep_for( std::chrono::microseconds( x ) );
 			dt_us = 16000;
 			time = GetTimeMicroseconds();
 		}
 		timeLastFrame = time;
-		printf( "\ndt_ms: %.1f    ", dt_us * 0.001f );
+//		printf( "\ndt_ms: %.1f    ", dt_us * 0.001f );
 
 		// Get User Input
 		glfwPollEvents();
@@ -468,17 +486,20 @@ void Application::MainLoop() {
 		// If the time is greater than 33ms (30fps)
 		// then force the time difference to smaller
 		// to prevent super large simulation steps.
-		if ( dt_us > 33000.0f ) {
+		if ( dt_us > 33000.0f ) 
+		{
 			dt_us = 33000.0f;
 		}
 
 		bool runPhysics = true;
-		if ( m_isPaused ) {
+		if ( bIsPaused ) 
+		{
 			dt_us = 0.0f;
 			runPhysics = false;
-			if ( m_stepFrame ) {
+			if ( bStepFrame ) 
+			{
 				dt_us = 16667.0f;
-				m_stepFrame = false;
+				bStepFrame = false;
 				runPhysics = true;
 			}
 			numSamples = 0;
@@ -487,15 +508,18 @@ void Application::MainLoop() {
 		float dt_sec = dt_us * 0.001f * 0.001f;
 
 		// Run Update
-		if ( runPhysics ) {
+		if ( runPhysics ) 
+		{
 			int startTime = GetTimeMicroseconds();
-			for ( int i = 0; i < 2; i++ ) {
+			for ( int i = 0; i < 2; i++ ) 
+			{
 				m_scene->Update( dt_sec * 0.5f );
 			}
 			int endTime = GetTimeMicroseconds();
 
 			dt_us = (float)endTime - (float)startTime;
-			if ( dt_us > maxTime ) {
+			if ( dt_us > maxTime ) 
+			{
 				maxTime = dt_us;
 			}
 
@@ -515,7 +539,8 @@ void Application::MainLoop() {
 Application::UpdateUniforms
 ====================================================
 */
-void Application::UpdateUniforms() {
+void Application::UpdateUniforms() 
+{
 	m_renderModels.clear();
 
 	uint32_t uboByteOffset = 0;
@@ -616,8 +641,8 @@ void Application::UpdateUniforms() {
 		//
 		//	Update the uniform buffer with the body positions/orientations
 		//
-		for ( int i = 0; i < m_scene->m_bodies.size(); i++ ) {
-			Body & body = m_scene->m_bodies[ i ];
+		for ( int i = 0; i < m_scene->mBodies.size(); i++ ) {
+			Body & body = m_scene->mBodies[ i ];
 
 			Vec3 fwd = body.m_orientation.RotatePoint( Vec3( 1, 0, 0 ) );
 			Vec3 up = body.m_orientation.RotatePoint( Vec3( 0, 0, 1 ) );
@@ -649,7 +674,8 @@ void Application::UpdateUniforms() {
 Application::DrawFrame
 ====================================================
 */
-void Application::DrawFrame() {
+void Application::DrawFrame() 
+{
 	UpdateUniforms();
 
 	//

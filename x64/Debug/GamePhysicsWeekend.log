@@ -1,2 +1,7 @@
-﻿  Scene.cpp
+﻿  OffscreenRenderer.cpp
+  application.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
+C:\Users\Martin Linklater\Code\GamePhysicsWeekend\libs\glfw-3.2.1.bin.WIN64\include\GLFW\glfw3.h(98): message : see previous definition of 'APIENTRY'
+  main.cpp
+  Generating Code...
   GamePhysicsWeekend.vcxproj -> C:\Users\Martin Linklater\Code\GamePhysicsWeekend\x64\Debug\GamePhysicsWeekend.exe

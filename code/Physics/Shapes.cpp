@@ -149,15 +149,18 @@ void FillDiamond() {
 
 	const Quat quat( Vec3( 0, 0, 1 ), 2.0f * pi * 0.125f );
 	int idx = 0;
-	for ( int i = 0; i < 7; i++ ) {
+	for ( int i = 0; i < 7; i++ ) 
+	{
 		g_diamond[ idx ] = pts[ i ];
 		idx++;
 	}
 
 	Quat quatAccumulator;
-	for ( int i = 1; i < 8; i++ ) {
+	for ( int i = 1; i < 8; i++ ) 
+	{
 		quatAccumulator = quatAccumulator * quat;
-		for ( int pt = 0; pt < 7; pt++ ) {
+		for ( int pt = 0; pt < 7; pt++ ) 
+		{
 			g_diamond[ idx ] = quatAccumulator.RotatePoint( pts[ pt ] );
 			idx++;
 		}

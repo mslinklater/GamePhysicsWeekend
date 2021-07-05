@@ -26,7 +26,7 @@ Application
 */
 class Application {
 public:
-	Application() : m_isPaused( true ), m_stepFrame( false ) {}
+	Application() : bIsPaused( true ), bStepFrame( false ) {}
 	~Application();
 
 	void Initialize();
@@ -35,7 +35,7 @@ public:
 private:
 	std::vector< const char * > GetGLFWRequiredExtensions() const;
 
-	void InitializeGLFW();
+	bool InitializeGLFW();
 	bool InitializeVulkan();
 	void Cleanup();
 	void UpdateUniforms();
@@ -81,8 +81,10 @@ private:
 	float m_cameraPositionTheta;
 	float m_cameraPositionPhi;
 	float m_cameraRadius;
-	bool m_isPaused;
-	bool m_stepFrame;
+
+	bool bIsPaused;
+	bool bStepFrame;
+	bool bQuitRequested;
 
 	std::vector< RenderModel > m_renderModels;
 
