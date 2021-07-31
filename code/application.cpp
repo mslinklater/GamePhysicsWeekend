@@ -80,11 +80,11 @@ void Application::Initialize()
 	m_scene->Initialize();
 	m_scene->Reset();
 
-	m_models.reserve( m_scene->mBodies.size() );
-	for ( int i = 0; i < m_scene->mBodies.size(); i++ ) 
+	m_models.reserve( m_scene->m_bodies.size() );
+	for ( int i = 0; i < m_scene->m_bodies.size(); i++ ) 
 	{
 		Model * model = new Model();
-		model->BuildFromShape( m_scene->mBodies[ i ].m_shape );
+		model->BuildFromShape( m_scene->m_bodies[ i ].m_shape );
 		model->MakeVBO( &m_deviceContext );
 
 		m_models.push_back( model );
@@ -362,7 +362,8 @@ void Application::ResizeWindow( int windowWidth, int windowHeight ) {
 		pipelineParms.depthTest = false;
 		pipelineParms.depthWrite = false;
 		result = m_copyPipeline.Create( &m_deviceContext, pipelineParms );
-		if ( !result ) {
+		if ( !result ) 
+		{
 			printf( "Unable to build pipeline!\n" );
 			assert( 0 );
 			return;
@@ -641,8 +642,8 @@ void Application::UpdateUniforms()
 		//
 		//	Update the uniform buffer with the body positions/orientations
 		//
-		for ( int i = 0; i < m_scene->mBodies.size(); i++ ) {
-			Body & body = m_scene->mBodies[ i ];
+		for ( int i = 0; i < m_scene->m_bodies.size(); i++ ) {
+			Body & body = m_scene->m_bodies[ i ];
 
 			Vec3 fwd = body.m_orientation.RotatePoint( Vec3( 1, 0, 0 ) );
 			Vec3 up = body.m_orientation.RotatePoint( Vec3( 0, 0, 1 ) );

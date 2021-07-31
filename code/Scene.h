@@ -16,14 +16,14 @@ Scene
 */
 class Scene {
 public:
-	Scene() { mBodies.reserve( 128 ); }
+	Scene() { m_bodies.reserve( 128 ); }
 	~Scene();
 
 	void Reset();
 	void Initialize();
 	void Update( const float dt_sec );	
 
-	std::vector< Body > mBodies;
+	std::vector< Body > m_bodies;
 	std::vector< Constraint * >	m_constraints;
 	ManifoldCollector m_manifolds;
 };
