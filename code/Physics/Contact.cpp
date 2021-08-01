@@ -16,10 +16,14 @@ void ResolveContact( contact_t & contact )
 	const float invMassA = bodyA->m_invMass;
 	const float invMassB = bodyB->m_invMass;
 
+	const float elasticityA = bodyA->m_elasticity;
+	const float elasticityB = bodyB->m_elasticity;
+	const float elasticity = elasticityA * elasticityB;
+
 	// collision impulse
 	const Vec3& n = contact.normal;
 	const Vec3 vab = bodyA->m_linearVelocity - bodyB->m_linearVelocity;
-	const float ImpulseJ = -2.0f * vab.Dot(n) / (invMassA + invMassB);
+	const float ImpulseJ = -(1.0f + elasticity) * vab.Dot(n) / (invMassA + invMassB);
 	const Vec3 vectorImpulseJ = n * ImpulseJ;
 
 	bodyA->ApplyImpulseLinear(vectorImpulseJ * 1.0f);
