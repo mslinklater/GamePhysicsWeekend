@@ -65,6 +65,44 @@ void Body::ApplyImpulseAngular(const Vec3& impulse)
 	}
 }
 
+void Body::ApplyImpulse(const Vec3& impulsePoint, const Vec3& impulse)
+{
+	if (0.0f == m_invMass)	// infinite mass, do nothing
+	{
+		return;
+	}
+
+	ApplyImpulseLinear(impulse);
+
+	Vec3 position = GetCenterOfMassWorldSpace();
+	Vec3 r = impulsePoint - position;
+	Vec3 dL = r.Cross(impulse);
+	ApplyImpulseAngular(dL);
+}
+
+void Body::Update(const float dt_sec)
+{
+	m_position += m_linearVelocity * dt_sec;
+
+	// update position
+	Vec3 positionCM = GetCenterOfMassWorldSpace();
+	Vec3 cmToPos = m_position - positionCM;
+
+	// update angular velocity
+	Mat3 orientation = m_orientation.ToMat3();
+	Mat3 inertiaTensor = orientation * m_shape->InertiaTensor() * orientation.Transpose();
+	Vec3 alpha = inertiaTensor.Inverse() * (m_angularVelocity.Cross(inertiaTensor * m_angularVelocity));
+	m_angularVelocity += alpha * dt_sec;
+
+	// update orientation
+	Vec3 dAngle = m_angularVelocity * dt_sec;
+	Quat dq = Quat(dAngle, dAngle.GetMagnitude());
+	m_orientation = dq * m_orientation;
+	m_orientation.Normalize();
+
+	m_position = positionCM + dq.RotatePoint(cmToPos);
+}
+
 Mat3 Body::GetInverseInertiaTensorBodySpace() const
 {
 	Mat3 inertiaTensor = m_shape->InertiaTensor();

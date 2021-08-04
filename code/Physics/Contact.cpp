@@ -13,21 +13,61 @@ void ResolveContact( contact_t & contact )
 	Body* bodyA = contact.bodyA;
 	Body* bodyB = contact.bodyB;
 
-	const float invMassA = bodyA->m_invMass;
-	const float invMassB = bodyB->m_invMass;
+	const Vec3 ptOnA = contact.ptOnA_WorldSpace;
+	const Vec3 ptOnB = contact.ptOnB_WorldSpace;
 
 	const float elasticityA = bodyA->m_elasticity;
 	const float elasticityB = bodyB->m_elasticity;
 	const float elasticity = elasticityA * elasticityB;
 
-	// collision impulse
+	const float invMassA = bodyA->m_invMass;
+	const float invMassB = bodyB->m_invMass;
+
+	const Mat3 invWorldInertiaA = bodyA->GetInverseInertiaTensorWorldSpace();
+	const Mat3 invWorldInertiaB = bodyB->GetInverseInertiaTensorWorldSpace();
+
 	const Vec3& n = contact.normal;
-	const Vec3 vab = bodyA->m_linearVelocity - bodyB->m_linearVelocity;
-	const float ImpulseJ = -(1.0f + elasticity) * vab.Dot(n) / (invMassA + invMassB);
+
+	const Vec3 ra = ptOnA - bodyA->GetCenterOfMassWorldSpace();
+	const Vec3 rb = ptOnB - bodyB->GetCenterOfMassWorldSpace();
+
+	const Vec3 angularJA = (invWorldInertiaA * ra.Cross(n)).Cross(ra);
+	const Vec3 angularJB = (invWorldInertiaB * rb.Cross(n)).Cross(rb);
+	const float angularFactor = (angularJA + angularJB).Dot(n);
+
+	const Vec3 velA = bodyA->m_linearVelocity + bodyA->m_angularVelocity.Cross(ra);
+	const Vec3 velB = bodyB->m_linearVelocity + bodyB->m_angularVelocity.Cross(rb);
+
+	// collision impulse
+	const Vec3 vab = velA - velB;
+	const float ImpulseJ = (1.0f + elasticity) * vab.Dot(n) / (invMassA + invMassB + angularFactor);
 	const Vec3 vectorImpulseJ = n * ImpulseJ;
 
-	bodyA->ApplyImpulseLinear(vectorImpulseJ * 1.0f);
-	bodyB->ApplyImpulseLinear(vectorImpulseJ * -1.0f);
+	bodyA->ApplyImpulse(ptOnA, vectorImpulseJ * -1.0f);
+	bodyB->ApplyImpulse(ptOnB, vectorImpulseJ * 1.0f);
+
+	// impulse caused by friction
+
+	const float frictionA = bodyA->m_friction;
+	const float frictionB = bodyB->m_friction;
+	const float friction = frictionA * frictionB;
+
+	const Vec3 velNorm = n * n.Dot(vab);
+
+	const Vec3 velTang = vab - velNorm;
+
+	Vec3 relativeVelTang = velTang;
+	relativeVelTang.Normalize();
+
+	const Vec3 inertiaA = (invWorldInertiaA * ra.Cross(relativeVelTang)).Cross(ra);
+	const Vec3 inertiaB = (invWorldInertiaB * rb.Cross(relativeVelTang)).Cross(rb);
+	const float invInertia = (inertiaA + inertiaB).Dot(relativeVelTang);
+
+	const float reducedMass = 1.0f / (bodyA->m_invMass + bodyB->m_invMass + invInertia);
+	const Vec3 impulseFriction = velTang * reducedMass * friction;
+
+	bodyA->ApplyImpulse(ptOnA, impulseFriction * -1.0f);
+	bodyB->ApplyImpulse(ptOnB, impulseFriction * 1.0f);
 
 	// move the objects apart
 	const float tA = bodyA->m_invMass / (bodyA->m_invMass + bodyB->m_invMass);
