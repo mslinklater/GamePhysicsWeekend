@@ -391,7 +391,7 @@ void Application::MouseMoved( float x, float y ) {
 	Vec2 ds = newPosition - m_mousePosition;
 	m_mousePosition = newPosition;
 
-	float sensitivity = 0.01f;
+	float sensitivity = 0.002f;
 	m_cameraPositionTheta += ds.y * sensitivity;
 	m_cameraPositionPhi += ds.x * sensitivity;
 

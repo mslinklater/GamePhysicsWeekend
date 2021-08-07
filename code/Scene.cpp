@@ -106,7 +106,7 @@ void Scene::Update( const float dt_sec )
 			}
 
 			contact_t contact;
-			if (Intersect(bodyA, bodyB, contact))
+			if (Intersect(bodyA, bodyB, dt_sec, contact))
 			{
 				ResolveContact(contact);
 			}
