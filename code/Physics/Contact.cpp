@@ -13,8 +13,8 @@ void ResolveContact( contact_t & contact )
 	Body* bodyA = contact.bodyA;
 	Body* bodyB = contact.bodyB;
 
-	const Vec3 ptOnA = contact.ptOnA_WorldSpace;
-	const Vec3 ptOnB = contact.ptOnB_WorldSpace;
+	const Vec3 ptOnA = bodyA->BodySpaceToWorldSpace(contact.ptOnA_LocalSpace);
+	const Vec3 ptOnB = bodyB->BodySpaceToWorldSpace(contact.ptOnB_LocalSpace);
 
 	const float elasticityA = bodyA->m_elasticity;
 	const float elasticityB = bodyB->m_elasticity;
@@ -69,11 +69,14 @@ void ResolveContact( contact_t & contact )
 	bodyA->ApplyImpulse(ptOnA, impulseFriction * -1.0f);
 	bodyB->ApplyImpulse(ptOnB, impulseFriction * 1.0f);
 
-	// move the objects apart
-	const float tA = bodyA->m_invMass / (bodyA->m_invMass + bodyB->m_invMass);
-	const float tB = bodyB->m_invMass / (bodyA->m_invMass + bodyB->m_invMass);
+	if (0.0f == contact.timeOfImpact)
+	{
+		// move the objects apart
+		const float tA = invMassA / (invMassA + invMassB);
+		const float tB = invMassB / (invMassA + invMassB);
 
-	const Vec3 ds = contact.ptOnB_WorldSpace - contact.ptOnA_WorldSpace;
-	bodyA->m_position += ds * tA;
-	bodyB->m_position -= ds * tB;
+		const Vec3 ds = ptOnB - ptOnA;
+		bodyA->m_position += ds * tA;
+		bodyB->m_position -= ds * tB;
+	}
 }
